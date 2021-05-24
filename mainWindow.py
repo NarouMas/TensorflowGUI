@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import filedialog
 from win32api import GetSystemMetrics
 import subprocess
+import createModelFile
+import os
 
 
 class TfMainWindow:
@@ -41,6 +43,9 @@ class TfMainWindow:
         self.remove_layer_button = tk.Button(self.main_window, text='Remove Layer', command=self.remove_layer)
         self.remove_layer_button.grid(column=2, row=self.layerCount)
 
+        self.run_button = tk.Button(self.main_window, text='Run', command=self.run)
+        self.run_button.grid(column=1, row=10)
+
     def add_layer(self):
         # add the drop layer drop down menu
         self.layer_variable.append(tk.StringVar(self.main_window, name=str(self.layerCount)))
@@ -50,7 +55,7 @@ class TfMainWindow:
         self.layer_opt[self.layerCount].config(width=20, font=('Helvetica', 8))
         self.layer_opt[self.layerCount].grid(column=2, row=self.layerCount)
         # add layer argument
-        layer_argument_conv2d = [{'filters': 32, 'kernel_size': 3, 'strides': 1,
+        layer_argument_conv2d = [{'type': 'Conv2D', 'filters': 32, 'kernel_size': 3, 'strides': 1,
                                   'padding': 'valid', 'activation': 'relu'},
                                  tk.Label(self.main_window, text='filters', bg='#4e5254', fg='white'),
                                  tk.Entry(self.main_window, width=10),
@@ -87,6 +92,28 @@ class TfMainWindow:
         self.add_layer_button.grid(column=1, row=self.layerCount)
         self.remove_layer_button.grid(column=2, row=self.layerCount)
 
+    def run(self):
+        train_dirs = os.listdir(self.trainDataPath)
+        test_dirs = os.listdir(self.testDataPath)
+        for i in range(len(train_dirs)):
+            fullpath = os.path.join(self.trainDataPath, train_dirs[i])
+            fullpath = fullpath.replace('\\', '/')
+            train_dirs[i] = fullpath
+        """
+        for i in range(len(test_dirs)):
+            fullpath = os.path.join(self.testDataPath, test_dirs[i])
+            fullpath = fullpath.replace('\\', '/')
+            test_dirs[i] = fullpath
+        """
+
+        text = createModelFile.get_model_file_text(self.layer_argument, train_dirs, test_dirs)
+        #createModelFile.save_text_to_python_file(text, 'myModel.py')
+
+        cmd = ['python', 'myModel.py']
+        os.system('python myModel.py')
+        #output = subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
+        #print('capture output:', str(output))
+
     def layer_opt_listener(self, var, index, mode):
         var = int(var)
         text = self.layer_variable[var].get()
@@ -99,7 +126,7 @@ class TfMainWindow:
 
         # add new argument
         if text == 'Conv2D':
-            layer_argument_conv2d = [{'filters': 32, 'kernel_size': 3, 'strides': 1,
+            layer_argument_conv2d = [{'type': 'Conv2D', 'filters': 32, 'kernel_size': 3, 'strides': 1,
                                       'padding': 'valid', 'activation': 'relu'},
                                      tk.Label(self.main_window, text='filters', bg='#4e5254', fg='white'),
                                      tk.Entry(self.main_window, width=10),
@@ -119,10 +146,10 @@ class TfMainWindow:
             layer_argument_conv2d[6].grid(column=8, row=var)  # filter entry
             layer_argument_conv2d[6].insert(tk.END, '1')
         elif text == 'Flatten':
-            layer_argument_flatten = [{}]
+            layer_argument_flatten = [{'type': 'Flatten'}]
             self.layer_argument[var] = layer_argument_flatten
         elif text == 'MaxPool2D':
-            layer_argument_pool = [{'pool_size': 2, 'strides': 3, 'padding': 'valid'},
+            layer_argument_pool = [{'type': 'MaxPool2D', 'pool_size': 2, 'strides': 3, 'padding': 'valid'},
                                    tk.Label(self.main_window, text='pool size', bg='#4e5254', fg='white'),
                                    tk.Entry(self.main_window, width=10),
                                    tk.Label(self.main_window, text='strides', bg='#4e5254', fg='white'),
@@ -136,19 +163,19 @@ class TfMainWindow:
             layer_argument_pool[4].grid(column=6, row=var)  # strides entry
             layer_argument_pool[4].insert(tk.END, '3')
         elif text == 'Dense':
-            layer_argument_pool = [{'units': 10, 'use_bias': True, 'activation': 'relu'},
+            layer_argument_dense = [{'type': 'Dense', 'units': 10, 'use_bias': True, 'activation': 'relu'},
                                    tk.Label(self.main_window, text='units', bg='#4e5254', fg='white'),
                                    tk.Entry(self.main_window, width=10),
                                    tk.Label(self.main_window, text='use_bias', bg='#4e5254', fg='white'),
                                    tk.Entry(self.main_window, width=10)
                                    ]
-            self.layer_argument[var] = layer_argument_pool
-            layer_argument_pool[1].grid(column=3, row=var)  # units label
-            layer_argument_pool[2].grid(column=4, row=var)  # units entry
-            layer_argument_pool[2].insert(tk.END, '10')
-            layer_argument_pool[3].grid(column=5, row=var)  # use_bias label
-            layer_argument_pool[4].grid(column=6, row=var)  # use_bias entry
-            layer_argument_pool[4].insert(tk.END, 'True')
+            self.layer_argument[var] = layer_argument_dense
+            layer_argument_dense[1].grid(column=3, row=var)  # units label
+            layer_argument_dense[2].grid(column=4, row=var)  # units entry
+            layer_argument_dense[2].insert(tk.END, '10')
+            layer_argument_dense[3].grid(column=5, row=var)  # use_bias label
+            layer_argument_dense[4].grid(column=6, row=var)  # use_bias entry
+            layer_argument_dense[4].insert(tk.END, 'True')
 
     def init_tool_bar(self):
         menu_bar = tk.Menu(self.main_window)
