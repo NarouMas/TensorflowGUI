@@ -1,9 +1,11 @@
 import tkinter as tk
 from tkinter import filedialog
+from tkinter import messagebox
 from win32api import GetSystemMetrics
 import subprocess
 import createModelFile
 import os
+import threading
 
 
 class TfMainWindow:
@@ -47,6 +49,46 @@ class TfMainWindow:
 
         self.run_button = tk.Button(self.main_window, text='Run', command=self.run)
         self.run_button.grid(column=1, row=10)
+
+        self.status_label = tk.Label(self.main_window, text='Status', bg='#4e5254', fg='white')
+        self.status_label.grid(column=2, row=10)
+
+        self.status_content_label = tk.Label(self.main_window, text='Setting', bg='#4e5254', fg='#00ff00')
+        self.status_content_label.grid(column=3, row=10)
+
+        self.wide_setting = [{'num_epochs': 10, 'batch_size': 32, 'learning_rate': 0.01, 'width': 64, 'height': 64,
+                              'channel': 3},
+                             tk.Label(self.main_window, text='num_epochs', bg='#4e5254', fg='white'),
+                             tk.Entry(self.main_window, width=10),
+                             tk.Label(self.main_window, text='batch_size', bg='#4e5254', fg='white'),
+                             tk.Entry(self.main_window, width=10),
+                             tk.Label(self.main_window, text='learning_rate', bg='#4e5254', fg='white'),
+                             tk.Entry(self.main_window, width=10),
+                             tk.Label(self.main_window, text='width', bg='#4e5254', fg='white'),
+                             tk.Entry(self.main_window, width=10),
+                             tk.Label(self.main_window, text='height', bg='#4e5254', fg='white'),
+                             tk.Entry(self.main_window, width=10),
+                             tk.Label(self.main_window, text='channel', bg='#4e5254', fg='white'),
+                             tk.Entry(self.main_window, width=10),
+                             ]
+        self.wide_setting[1].grid(column=1, row=9)  # num_epochs label
+        self.wide_setting[2].grid(column=2, row=9)  # num_epochs entry
+        self.wide_setting[2].insert(tk.END, '10')
+        self.wide_setting[3].grid(column=3, row=9)  # batch_size label
+        self.wide_setting[4].grid(column=4, row=9)  # batch_size entry
+        self.wide_setting[4].insert(tk.END, '32')
+        self.wide_setting[5].grid(column=5, row=9)  # learning_rate label
+        self.wide_setting[6].grid(column=6, row=9)  # learning_rate entry
+        self.wide_setting[6].insert(tk.END, '0.001')
+        self.wide_setting[7].grid(column=7, row=9)  # width label
+        self.wide_setting[8].grid(column=8, row=9)  # width entry
+        self.wide_setting[8].insert(tk.END, '64')
+        self.wide_setting[9].grid(column=9, row=9)  # height label
+        self.wide_setting[10].grid(column=10, row=9)  # height entry
+        self.wide_setting[10].insert(tk.END, '64')
+        self.wide_setting[11].grid(column=11, row=9)  # channel label
+        self.wide_setting[12].grid(column=12, row=9)  # channel entry
+        self.wide_setting[12].insert(tk.END, '3')
 
     def add_layer(self):
         # add the drop layer drop down menu
@@ -107,46 +149,128 @@ class TfMainWindow:
         self.remove_layer_button.grid(column=2, row=self.layerCount)
 
     def run(self):
+        if self.trainDataPath is None:
+            tk.messagebox.showerror(title='Error', message='Please select train data')
+            return
+        if self.testDataPath is None:
+            tk.messagebox.showerror(title='Error', message='Please select test data')
+            return
         train_dirs = os.listdir(self.trainDataPath)
         test_dirs = os.listdir(self.testDataPath)
         for i in range(len(train_dirs)):
             fullpath = os.path.join(self.trainDataPath, train_dirs[i])
             fullpath = fullpath.replace('\\', '/')
             train_dirs[i] = fullpath
-        """
+
         for i in range(len(test_dirs)):
             fullpath = os.path.join(self.testDataPath, test_dirs[i])
             fullpath = fullpath.replace('\\', '/')
             test_dirs[i] = fullpath
-        """
 
         # set layer arguments
+        self.run_button.configure(state='disabled')
         for i in range(0, len(self.layer_argument)):
+            self.layer_opt[i].configure(state='disabled')
             if self.layer_argument[i][0]['type'] == 'Conv2D':
                 self.layer_argument[i][0]['filters'] = int(self.layer_argument[i][2].get())
                 self.layer_argument[i][0]['kernel_size'] = int(self.layer_argument[i][4].get())
                 self.layer_argument[i][0]['strides'] = int(self.layer_argument[i][6].get())
                 self.layer_argument[i][0]['padding'] = 'valid'
                 self.layer_argument[i][0]['activation'] = self.layer_argument[i][8].get()
+
+                self.layer_argument[i][2].configure(state='disabled')
+                self.layer_argument[i][4].configure(state='disabled')
+                self.layer_argument[i][6].configure(state='disabled')
+                self.layer_argument[i][9].configure(state='disabled')
+
             elif self.layer_argument[i][0]['type'] == 'Flatten':
                 pass
             elif self.layer_argument[i][0]['type'] == 'MaxPool2D':
                 self.layer_argument[i][0]['pool_size'] = int(self.layer_argument[i][2].get())
                 self.layer_argument[i][0]['strides'] = int(self.layer_argument[i][4].get())
                 self.layer_argument[i][0]['padding'] = 'valid'
+
+                self.layer_argument[i][2].configure(state='disabled')
+                self.layer_argument[i][4].configure(state='disabled')
             elif self.layer_argument[i][0]['type'] == 'Dense':
                 self.layer_argument[i][0]['units'] = int(self.layer_argument[i][2].get())
                 self.layer_argument[i][0]['use_bias'] = True
                 self.layer_argument[i][0]['activation'] = self.layer_argument[i][6].get()
 
+                self.layer_argument[i][2].configure(state='disabled')
+                self.layer_argument[i][7].configure(state='disabled')
 
-        text = createModelFile.get_model_file_text(self.layer_argument, train_dirs, test_dirs)
+        self.wide_setting[0]['num_epochs'] = int(self.wide_setting[2].get())
+        self.wide_setting[0]['batch_size'] = int(self.wide_setting[4].get())
+        self.wide_setting[0]['learning_rate'] = float(self.wide_setting[6].get())
+        self.wide_setting[0]['width'] = int(self.wide_setting[8].get())
+        self.wide_setting[0]['height'] = int(self.wide_setting[10].get())
+        self.wide_setting[0]['channel'] = int(self.wide_setting[12].get())
+
+        self.wide_setting[1].configure(state='disabled')
+        self.wide_setting[3].configure(state='disabled')
+        self.wide_setting[5].configure(state='disabled')
+        self.wide_setting[7].configure(state='disabled')
+        self.wide_setting[9].configure(state='disabled')
+        self.wide_setting[11].configure(state='disabled')
+
+        self.add_layer_button.configure(state='disabled')
+        self.remove_layer_button.configure(state='disabled')
+
+        text = createModelFile.get_model_file_text(self.layer_argument, train_dirs, test_dirs, self.wide_setting)
         createModelFile.save_text_to_python_file(text, 'myModel.py')
 
         cmd = ['python', 'myModel.py']
+        thread = threading.Thread(target=self.execute_os_system, args=('python myModel.py',))
+        self.status_content_label['text'] = 'Training Model'
+        self.status_content_label['fg'] = '#ff0000'
+        thread.start()
         #os.system('python myModel.py')
         #output = subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
         #print('capture output:', str(output))
+
+    def execute_os_system(self, command):
+        os.system(command)
+
+        self.run_button.configure(state='normal')
+        for i in range(0, len(self.layer_argument)):
+            self.layer_opt[i].configure(state='normal')
+            if self.layer_argument[i][0]['type'] == 'Conv2D':
+                self.layer_argument[i][2].configure(state='normal')
+                self.layer_argument[i][4].configure(state='normal')
+                self.layer_argument[i][6].configure(state='normal')
+                self.layer_argument[i][9].configure(state='normal')
+
+            elif self.layer_argument[i][0]['type'] == 'Flatten':
+                pass
+            elif self.layer_argument[i][0]['type'] == 'MaxPool2D':
+                self.layer_argument[i][2].configure(state='normal')
+                self.layer_argument[i][4].configure(state='normal')
+            elif self.layer_argument[i][0]['type'] == 'Dense':
+                self.layer_argument[i][2].configure(state='normal')
+                self.layer_argument[i][7].configure(state='normal')
+
+        self.wide_setting[1].configure(state='normal')
+        self.wide_setting[3].configure(state='normal')
+        self.wide_setting[5].configure(state='normal')
+        self.wide_setting[7].configure(state='normal')
+        self.wide_setting[9].configure(state='normal')
+        self.wide_setting[11].configure(state='normal')
+
+        self.add_layer_button.configure(state='normal')
+        self.remove_layer_button.configure(state='normal')
+
+        f = open('result.txt', 'r')
+        status = f.read()
+        if status == 'success':
+            self.status_content_label['text'] = 'Finish'
+            self.status_content_label['fg'] = '#00ff00'
+        elif status == 'error':
+            self.status_content_label['text'] = 'Error'
+            self.status_content_label['fg'] = '#ff0000'
+        else:
+            self.status_content_label['text'] = 'WTF?'
+            self.status_content_label['fg'] = '#0000ff'
 
     def layer_opt_listener(self, var, index, mode):
         var = int(var)

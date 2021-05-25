@@ -1,11 +1,11 @@
-def get_model_file_text(layer_argument, train_dirs, test_dirs):
+def get_model_file_text(layer_argument, train_dirs, test_dirs, wide_setting):
     model_file_text = ''
     import_text = 'import tensorflow as tf\nimport os\nimport numpy as np\nimport cv2\n'
     model_file_text += import_text
 
-    model_file_text += 'num_epochs = 20\n'
-    model_file_text += 'batch_size = 32\n'
-    model_file_text += 'learning_rate = 0.001\n'
+    model_file_text += 'num_epochs = ' + str(wide_setting[0]['num_epochs']) + '\n'
+    model_file_text += 'batch_size = ' + str(wide_setting[0]['batch_size']) + '\n'
+    model_file_text += 'learning_rate = ' + str(wide_setting[0]['learning_rate']) + '\n'
 
     # generate train dir variable
     for i in range(len(train_dirs)):
@@ -27,7 +27,7 @@ def get_model_file_text(layer_argument, train_dirs, test_dirs):
         elif argument['type'] == 'Dense':
             layer_text += str(argument['units']) + ', activation=\'' + argument['activation'] + '\', use_bias=' + str(argument['use_bias']) + ''
         if i == 0:
-            layer_text += ', input_shape=(64, 64, 3)'
+            layer_text += ', input_shape=(' + str(wide_setting[0]['width']) + ', ' + str(wide_setting[0]['height']) + ', ' + str(wide_setting[0]['channel']) + ')'
         layer_text += ')'
 
         if i != len(layer_argument) - 1:
@@ -37,7 +37,7 @@ def get_model_file_text(layer_argument, train_dirs, test_dirs):
 
     model_text += '        ])\n'
     model_text += '        model.compile(\n'
-    model_text += '            optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),\n'
+    model_text += '            optimizer=tf.keras.optimizers.Adam(learning_rate=' + str(wide_setting[0]['learning_rate']) + '),\n'
     model_text += '            loss=tf.keras.losses.sparse_categorical_crossentropy,\n'
     model_text += '            metrics=[tf.keras.metrics.sparse_categorical_accuracy]\n'
     model_text += '        )\n'
@@ -48,12 +48,12 @@ def get_model_file_text(layer_argument, train_dirs, test_dirs):
     function_text += 'def _decode_and_resize(filename, label):\n'
     function_text += '    image_string = tf.io.read_file(filename)\n'
     function_text += '    image_decoded = tf.image.decode_jpeg(image_string)\n'
-    function_text += '    image_resized = tf.image.resize(image_decoded, [64, 64]) / 255.0\n'
+    function_text += '    image_resized = tf.image.resize(image_decoded, [' + str(wide_setting[0]['width']) + ', ' + str(wide_setting[0]['height']) + ']) / 255.0\n'
     function_text += '    return image_resized, label\n\n\n'
     function_text += 'def predict_resize_decode(filename):\n'
     function_text += '    image_string = tf.io.read_file(filename)\n'
     function_text += '    image_decoded = tf.image.decode_jpeg(image_string)\n'
-    function_text += '    image_resized = tf.image.resize(image_decoded, [64, 64]) / 255.0\n'
+    function_text += '    image_resized = tf.image.resize(image_decoded, [' + str(wide_setting[0]['width']) + ', ' + str(wide_setting[0]['height']) + ']) / 255.0\n'
     function_text += '    image_resized = np.expand_dims(image_resized, axis=0)\n'
     function_text += '    return image_resized\n\n\n'
     function_text += 'def train():\n'
@@ -95,8 +95,14 @@ def get_model_file_text(layer_argument, train_dirs, test_dirs):
 
     main_text = ''
     main_text += 'if __name__ == \'__main__\':\n'
-    main_text += '    model = train()\n'
-    main_text += ''
+    main_text += '    f = open(\'result.txt\', \'w\')\n'
+    main_text += '    try:\n'
+    main_text += '        model = train()\n'
+    main_text += '        f.write(\'success\')\n'
+    main_text += '    except:\n'
+    main_text += '        f.write(\'error\')\n'
+    main_text += '    finally:\n'
+    main_text += '        f.close()\n'
     model_file_text += main_text
 
 
