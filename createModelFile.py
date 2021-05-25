@@ -9,7 +9,7 @@ def get_model_file_text(layer_argument, train_dirs, test_dirs):
 
     # generate train dir variable
     for i in range(len(train_dirs)):
-        model_file_text += 'train_' + str(i) + '_dir = ' + '\'' + train_dirs[i] + '\'/\n'
+        model_file_text += 'train_' + str(i) + '_dir = ' + '\'' + train_dirs[i] + '/\'\n'
     model_text = 'class MyModel():\n'
     model_text += '    def getModel(self):\n'
     model_text += '        model = tf.keras.Sequential([\n'
@@ -19,13 +19,16 @@ def get_model_file_text(layer_argument, train_dirs, test_dirs):
         layer_text = ''
         layer_text += '            tf.keras.layers.' + argument['type'] + '('
         if argument['type'] == 'Conv2D':
-            layer_text += str(argument['filters']) + ', ' + str(argument['kernel_size']) + ', activation=\'' + argument['activation'] + '\', padding=\'' + argument['padding'] + '\')'
+            layer_text += str(argument['filters']) + ', ' + str(argument['kernel_size']) + ', activation=\'' + argument['activation'] + '\', padding=\'' + argument['padding'] + '\''
         elif argument['type'] == 'Flatten':
-            layer_text += ')'
+            layer_text += ''
         elif argument['type'] == 'MaxPool2D':
-            layer_text += str(argument['pool_size']) + ', strides=' + str(argument['strides']) + ', padding=\'' + argument['padding'] + '\')'
+            layer_text += str(argument['pool_size']) + ', strides=' + str(argument['strides']) + ', padding=\'' + argument['padding'] + '\''
         elif argument['type'] == 'Dense':
-            layer_text += str(argument['units']) + ', activation=\'' + argument['activation'] + '\', use_bias=' + str(argument['use_bias']) + ')'
+            layer_text += str(argument['units']) + ', activation=\'' + argument['activation'] + '\', use_bias=' + str(argument['use_bias']) + ''
+        if i == 0:
+            layer_text += ', input_shape=(64, 64, 3)'
+        layer_text += ')'
 
         if i != len(layer_argument) - 1:
             layer_text += ','
@@ -88,13 +91,14 @@ def get_model_file_text(layer_argument, train_dirs, test_dirs):
     function_text += ''
     function_text += ''
     function_text += ''
+    model_file_text += function_text
 
     main_text = ''
     main_text += 'if __name__ == \'__main__\':\n'
     main_text += '    model = train()\n'
     main_text += ''
+    model_file_text += main_text
 
-    model_file_text += function_text
 
     return model_file_text
 

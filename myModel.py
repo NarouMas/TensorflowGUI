@@ -10,9 +10,11 @@ train_1_dir = 'D:/Users/Wu/PycharmProjects/TensorflowGUI/trainData/no_mask_face/
 class MyModel():
     def getModel(self):
         model = tf.keras.Sequential([
-            tf.keras.layers.Conv2D(32, 3, activation='relu', padding='valid', input_shape=(64, 64, 3)),
+            tf.keras.layers.Conv2D(64, 5, activation='relu', padding='valid', input_shape=(64, 64, 3)),
+            tf.keras.layers.MaxPool2D(4, strides=3, padding='valid'),
             tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(10, activation='relu', use_bias=True)
+            tf.keras.layers.Dense(64, activation='relu', use_bias=True),
+            tf.keras.layers.Dense(2, activation='softmax', use_bias=True)
         ])
         model.compile(
             optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
@@ -62,7 +64,5 @@ def train():
     model.fit(train_dataset, epochs=num_epochs)
     tf.saved_model.save(model, "saved/job_WRN_back")
     return model
-
-
 if __name__ == '__main__':
     model = train()

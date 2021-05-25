@@ -23,6 +23,8 @@ class TfMainWindow:
         self.layer_variable = []
         self.layer_argument = []
         self.layerOption = ['Conv2D', 'Flatten', 'MaxPool2D', 'Dense']
+        self.activationOption = ['relu', 'None', 'linear', 'softmax']
+        self.paddingOption = ['valid', 'same']
         self.layerCount = 0
 
         self.model_info_label = tk.Label(self.main_window, text='Model Info', bg='#4e5254', fg='white')
@@ -63,7 +65,15 @@ class TfMainWindow:
                                  tk.Entry(self.main_window, width=10),
                                  tk.Label(self.main_window, text='strides', bg='#4e5254', fg='white'),
                                  tk.Entry(self.main_window, width=10),
+                                 tk.Label(self.main_window, text='activation', bg='#4e5254', fg='white'),
+                                 tk.StringVar(self.main_window, name='activation' + str(self.layerCount))
                                  ]
+
+        layer_argument_conv2d[8].set(self.activationOption[0])
+        layer_argument_conv2d.append(tk.OptionMenu(self.main_window, layer_argument_conv2d[8],
+                                                   *self.activationOption))
+        layer_argument_conv2d[8].trace("w", self.layer_activation_opt_listener)
+
         self.layer_argument.append(layer_argument_conv2d)
         layer_argument_conv2d[1].grid(column=3, row=self.layerCount)  # filter label
         layer_argument_conv2d[2].grid(column=4, row=self.layerCount)  # filter entry
@@ -74,6 +84,9 @@ class TfMainWindow:
         layer_argument_conv2d[5].grid(column=7, row=self.layerCount)  # filter label
         layer_argument_conv2d[6].grid(column=8, row=self.layerCount)  # filter entry
         layer_argument_conv2d[6].insert(tk.END, '1')
+        layer_argument_conv2d[7].grid(column=9, row=self.layerCount)  # activation label
+        layer_argument_conv2d[9].config(width=20, font=('Helvetica', 8))
+        layer_argument_conv2d[9].grid(column=10, row=self.layerCount)  # activation option
         # grid button in window
         self.layerCount += 1
         self.add_layer_button.grid(column=1, row=self.layerCount)
@@ -84,7 +97,8 @@ class TfMainWindow:
             return
         self.layer_opt[self.layerCount - 1].destroy()
         for i in range(1, len(self.layer_argument[self.layerCount - 1])):
-            self.layer_argument[self.layerCount - 1][i].destroy()
+            if str(type(self.layer_argument[self.layerCount - 1][i])) != '<class \'tkinter.StringVar\'>':
+                self.layer_argument[self.layerCount - 1][i].destroy()
         self.layer_opt.pop(self.layerCount - 1)
         self.layer_variable.pop(self.layerCount - 1)
         self.layer_argument.pop(self.layerCount - 1)
@@ -106,11 +120,31 @@ class TfMainWindow:
             test_dirs[i] = fullpath
         """
 
+        # set layer arguments
+        for i in range(0, len(self.layer_argument)):
+            if self.layer_argument[i][0]['type'] == 'Conv2D':
+                self.layer_argument[i][0]['filters'] = int(self.layer_argument[i][2].get())
+                self.layer_argument[i][0]['kernel_size'] = int(self.layer_argument[i][4].get())
+                self.layer_argument[i][0]['strides'] = int(self.layer_argument[i][6].get())
+                self.layer_argument[i][0]['padding'] = 'valid'
+                self.layer_argument[i][0]['activation'] = self.layer_argument[i][8].get()
+            elif self.layer_argument[i][0]['type'] == 'Flatten':
+                pass
+            elif self.layer_argument[i][0]['type'] == 'MaxPool2D':
+                self.layer_argument[i][0]['pool_size'] = int(self.layer_argument[i][2].get())
+                self.layer_argument[i][0]['strides'] = int(self.layer_argument[i][4].get())
+                self.layer_argument[i][0]['padding'] = 'valid'
+            elif self.layer_argument[i][0]['type'] == 'Dense':
+                self.layer_argument[i][0]['units'] = int(self.layer_argument[i][2].get())
+                self.layer_argument[i][0]['use_bias'] = True
+                self.layer_argument[i][0]['activation'] = self.layer_argument[i][6].get()
+
+
         text = createModelFile.get_model_file_text(self.layer_argument, train_dirs, test_dirs)
-        #createModelFile.save_text_to_python_file(text, 'myModel.py')
+        createModelFile.save_text_to_python_file(text, 'myModel.py')
 
         cmd = ['python', 'myModel.py']
-        os.system('python myModel.py')
+        #os.system('python myModel.py')
         #output = subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
         #print('capture output:', str(output))
 
@@ -121,7 +155,8 @@ class TfMainWindow:
 
         # clear old argument
         for i in range(1, len(self.layer_argument[var])):
-            self.layer_argument[var][i].destroy()
+            if str(type(self.layer_argument[var][i])) != '<class \'tkinter.StringVar\'>':
+                self.layer_argument[var][i].destroy()
         self.layer_argument[var] = []
 
         # add new argument
@@ -133,8 +168,14 @@ class TfMainWindow:
                                      tk.Label(self.main_window, text='kernel_size', bg='#4e5254', fg='white'),
                                      tk.Entry(self.main_window, width=10),
                                      tk.Label(self.main_window, text='strides', bg='#4e5254', fg='white'),
-                                     tk.Entry(self.main_window, width=10)
+                                     tk.Entry(self.main_window, width=10),
+                                     tk.Label(self.main_window, text='activation', bg='#4e5254', fg='white'),
+                                     tk.StringVar(self.main_window, name='activation' + str(var))
                                      ]
+            layer_argument_conv2d[8].set(self.activationOption[0])
+            layer_argument_conv2d.append(tk.OptionMenu(self.main_window, layer_argument_conv2d[8],
+                                                       *self.activationOption))
+            layer_argument_conv2d[8].trace("w", self.layer_activation_opt_listener)
             self.layer_argument[var] = layer_argument_conv2d
             layer_argument_conv2d[1].grid(column=3, row=var)  # filter label
             layer_argument_conv2d[2].grid(column=4, row=var)  # filter entry
@@ -145,6 +186,9 @@ class TfMainWindow:
             layer_argument_conv2d[5].grid(column=7, row=var)  # filter label
             layer_argument_conv2d[6].grid(column=8, row=var)  # filter entry
             layer_argument_conv2d[6].insert(tk.END, '1')
+            layer_argument_conv2d[7].grid(column=9, row=var)  # activation label
+            layer_argument_conv2d[9].config(width=20, font=('Helvetica', 8))
+            layer_argument_conv2d[9].grid(column=10, row=var)  # activation option
         elif text == 'Flatten':
             layer_argument_flatten = [{'type': 'Flatten'}]
             self.layer_argument[var] = layer_argument_flatten
@@ -164,11 +208,16 @@ class TfMainWindow:
             layer_argument_pool[4].insert(tk.END, '3')
         elif text == 'Dense':
             layer_argument_dense = [{'type': 'Dense', 'units': 10, 'use_bias': True, 'activation': 'relu'},
-                                   tk.Label(self.main_window, text='units', bg='#4e5254', fg='white'),
-                                   tk.Entry(self.main_window, width=10),
-                                   tk.Label(self.main_window, text='use_bias', bg='#4e5254', fg='white'),
-                                   tk.Entry(self.main_window, width=10)
-                                   ]
+                                    tk.Label(self.main_window, text='units', bg='#4e5254', fg='white'),
+                                    tk.Entry(self.main_window, width=10),
+                                    tk.Label(self.main_window, text='use_bias', bg='#4e5254', fg='white'),
+                                    tk.Entry(self.main_window, width=10),
+                                    tk.Label(self.main_window, text='activation', bg='#4e5254', fg='white'),
+                                    tk.StringVar(self.main_window, name='activation' + str(var))
+                                    ]
+            layer_argument_dense[6].set(self.activationOption[0])
+            layer_argument_dense.append(tk.OptionMenu(self.main_window, layer_argument_dense[6], *self.activationOption))
+            layer_argument_dense[6].trace("w", self.layer_activation_opt_listener)
             self.layer_argument[var] = layer_argument_dense
             layer_argument_dense[1].grid(column=3, row=var)  # units label
             layer_argument_dense[2].grid(column=4, row=var)  # units entry
@@ -176,6 +225,12 @@ class TfMainWindow:
             layer_argument_dense[3].grid(column=5, row=var)  # use_bias label
             layer_argument_dense[4].grid(column=6, row=var)  # use_bias entry
             layer_argument_dense[4].insert(tk.END, 'True')
+            layer_argument_dense[5].grid(column=7, row=var)  # activation label
+            layer_argument_dense[7].config(width=20, font=('Helvetica', 8))
+            layer_argument_dense[7].grid(column=8, row=var)  # activation option
+
+    def layer_activation_opt_listener(self, var, index, mode):
+        pass
 
     def init_tool_bar(self):
         menu_bar = tk.Menu(self.main_window)
