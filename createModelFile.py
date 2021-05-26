@@ -1,6 +1,8 @@
 def get_model_file_text(layer_argument, train_dirs, test_dirs, wide_setting):
     model_file_text = ''
     import_text = 'import tensorflow as tf\nimport os\nimport numpy as np\nimport cv2\n'
+    import_text += 'import sys\n'
+    import_text += 'import traceback\n'
     model_file_text += import_text
 
     model_file_text += 'num_epochs = ' + str(wide_setting[0]['num_epochs']) + '\n'
@@ -85,9 +87,9 @@ def get_model_file_text(layer_argument, train_dirs, test_dirs, wide_setting):
     function_text += '        loss=tf.keras.losses.sparse_categorical_crossentropy,\n'
     function_text += '        metrics=[tf.keras.metrics.sparse_categorical_accuracy]\n'
     function_text += '    )\n'
-    function_text += '    model.fit(train_dataset, epochs=num_epochs)\n'
-    function_text += '    tf.saved_model.save(model, "saved/job_WRN_back")\n'
-    function_text += '    return model\n'
+    function_text += '    history = model.fit(train_dataset, epochs=num_epochs)\n'
+    function_text += '    tf.saved_model.save(model, "saved/' + wide_setting[0]['modelName'] + '")\n'
+    function_text += '    return model, history\n'
     function_text += ''
     function_text += ''
     function_text += ''
@@ -97,12 +99,27 @@ def get_model_file_text(layer_argument, train_dirs, test_dirs, wide_setting):
     main_text += 'if __name__ == \'__main__\':\n'
     main_text += '    f = open(\'result.txt\', \'w\')\n'
     main_text += '    try:\n'
-    main_text += '        model = train()\n'
-    main_text += '        f.write(\'success\')\n'
-    main_text += '    except:\n'
-    main_text += '        f.write(\'error\')\n'
+    main_text += '        model, history = train()\n'
+    main_text += '        f.write(\'success\\n\')\n'
+    main_text += '        f.write(\'loss:\' + str(history.history[\'loss\']) + \'\\n\')\n'
+    main_text += '        f.write(\'sparse_categorical_accuracy:\' + str(history.history[\'sparse_categorical_accuracy\']) + \'\\n\')\n'
+    main_text += '    except Exception as e:\n'
+    main_text += '        traceback.print_exc()\n'
+    main_text += '        error_class = e.__class__.__name__\n'
+    main_text += '        detail = str(e)\n'
+    main_text += '        cl, exc, tb = sys.exc_info()\n'
+    main_text += '        lastCallStack = traceback.extract_tb(tb)[-1]\n'
+    main_text += '        fileName = lastCallStack[0]\n'
+    main_text += '        lineNum = lastCallStack[1]\n'
+    main_text += '        funcName = lastCallStack[2]\n'
+    main_text += '        errMsg = "File \\"{}\\", line {}, in {}: [{}] {}".format(fileName, lineNum, funcName, error_class, detail)\n'
+    main_text += '        f.write(\'error\\n\')\n'
+    main_text += '        f.write(errMsg)\n'
     main_text += '    finally:\n'
     main_text += '        f.close()\n'
+    main_text += ''
+
+
     model_file_text += main_text
 
 

@@ -58,7 +58,7 @@ class TfMainWindow:
         self.status_content_label.grid(column=3, row=10)
 
         self.wide_setting = [{'num_epochs': 10, 'batch_size': 32, 'learning_rate': 0.01, 'width': 64, 'height': 64,
-                              'channel': 3},
+                              'channel': 3, 'modelName' : 'myModel'},
                              tk.Label(self.main_window, text='num_epochs', bg='#4e5254', fg='white'),
                              tk.Entry(self.main_window, width=10),
                              tk.Label(self.main_window, text='batch_size', bg='#4e5254', fg='white'),
@@ -71,25 +71,30 @@ class TfMainWindow:
                              tk.Entry(self.main_window, width=10),
                              tk.Label(self.main_window, text='channel', bg='#4e5254', fg='white'),
                              tk.Entry(self.main_window, width=10),
+                             tk.Label(self.main_window, text='model name', bg='#4e5254', fg='white'),
+                             tk.Entry(self.main_window, width=10),
                              ]
-        self.wide_setting[1].grid(column=1, row=9)  # num_epochs label
-        self.wide_setting[2].grid(column=2, row=9)  # num_epochs entry
+        self.wide_setting[1].grid(column=3, row=9)  # num_epochs label
+        self.wide_setting[2].grid(column=4, row=9)  # num_epochs entry
         self.wide_setting[2].insert(tk.END, '10')
-        self.wide_setting[3].grid(column=3, row=9)  # batch_size label
-        self.wide_setting[4].grid(column=4, row=9)  # batch_size entry
+        self.wide_setting[3].grid(column=5, row=9)  # batch_size label
+        self.wide_setting[4].grid(column=6, row=9)  # batch_size entry
         self.wide_setting[4].insert(tk.END, '32')
-        self.wide_setting[5].grid(column=5, row=9)  # learning_rate label
-        self.wide_setting[6].grid(column=6, row=9)  # learning_rate entry
+        self.wide_setting[5].grid(column=7, row=9)  # learning_rate label
+        self.wide_setting[6].grid(column=8, row=9)  # learning_rate entry
         self.wide_setting[6].insert(tk.END, '0.001')
-        self.wide_setting[7].grid(column=7, row=9)  # width label
-        self.wide_setting[8].grid(column=8, row=9)  # width entry
+        self.wide_setting[7].grid(column=9, row=9)  # width label
+        self.wide_setting[8].grid(column=10, row=9)  # width entry
         self.wide_setting[8].insert(tk.END, '64')
-        self.wide_setting[9].grid(column=9, row=9)  # height label
-        self.wide_setting[10].grid(column=10, row=9)  # height entry
+        self.wide_setting[9].grid(column=11, row=9)  # height label
+        self.wide_setting[10].grid(column=12, row=9)  # height entry
         self.wide_setting[10].insert(tk.END, '64')
-        self.wide_setting[11].grid(column=11, row=9)  # channel label
-        self.wide_setting[12].grid(column=12, row=9)  # channel entry
+        self.wide_setting[11].grid(column=13, row=9)  # channel label
+        self.wide_setting[12].grid(column=14, row=9)  # channel entry
         self.wide_setting[12].insert(tk.END, '3')
+        self.wide_setting[13].grid(column=1, row=9)  # model name label
+        self.wide_setting[14].grid(column=2, row=9)  # model name entry
+        self.wide_setting[14].insert(tk.END, 'myModel')
 
     def add_layer(self):
         # add the drop layer drop down menu
@@ -219,13 +224,15 @@ class TfMainWindow:
         self.wide_setting[0]['width'] = int(self.wide_setting[8].get())
         self.wide_setting[0]['height'] = int(self.wide_setting[10].get())
         self.wide_setting[0]['channel'] = int(self.wide_setting[12].get())
+        self.wide_setting[0]['modelName'] = self.wide_setting[14].get()
 
-        self.wide_setting[1].configure(state='disabled')
-        self.wide_setting[3].configure(state='disabled')
-        self.wide_setting[5].configure(state='disabled')
-        self.wide_setting[7].configure(state='disabled')
-        self.wide_setting[9].configure(state='disabled')
-        self.wide_setting[11].configure(state='disabled')
+        self.wide_setting[2].configure(state='disabled')
+        self.wide_setting[4].configure(state='disabled')
+        self.wide_setting[6].configure(state='disabled')
+        self.wide_setting[8].configure(state='disabled')
+        self.wide_setting[10].configure(state='disabled')
+        self.wide_setting[12].configure(state='disabled')
+        self.wide_setting[14].configure(state='disabled')
 
         self.add_layer_button.configure(state='disabled')
         self.remove_layer_button.configure(state='disabled')
@@ -263,22 +270,24 @@ class TfMainWindow:
                 self.layer_argument[i][7].configure(state='normal')
                 self.layer_argument[i][9].configure(state='normal')
 
-        self.wide_setting[1].configure(state='normal')
-        self.wide_setting[3].configure(state='normal')
-        self.wide_setting[5].configure(state='normal')
-        self.wide_setting[7].configure(state='normal')
-        self.wide_setting[9].configure(state='normal')
-        self.wide_setting[11].configure(state='normal')
+        self.wide_setting[2].configure(state='normal')
+        self.wide_setting[4].configure(state='normal')
+        self.wide_setting[6].configure(state='normal')
+        self.wide_setting[8].configure(state='normal')
+        self.wide_setting[10].configure(state='normal')
+        self.wide_setting[12].configure(state='normal')
+        self.wide_setting[14].configure(state='normal')
 
         self.add_layer_button.configure(state='normal')
         self.remove_layer_button.configure(state='normal')
 
         f = open('result.txt', 'r')
-        status = f.read()
-        if status == 'success':
+        status = f.readline()
+        print('status:', status)
+        if status == 'success\n':
             self.status_content_label['text'] = 'Finish'
             self.status_content_label['fg'] = '#00ff00'
-        elif status == 'error':
+        elif status == 'error\n':
             self.status_content_label['text'] = 'Error'
             self.status_content_label['fg'] = '#ff0000'
         else:

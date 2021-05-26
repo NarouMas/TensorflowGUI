@@ -2,6 +2,8 @@ import tensorflow as tf
 import os
 import numpy as np
 import cv2
+import sys
+import traceback
 num_epochs = 10
 batch_size = 32
 learning_rate = 0.001
@@ -14,7 +16,7 @@ class MyModel():
             tf.keras.layers.MaxPool2D(2, strides=3, padding='valid'),
             tf.keras.layers.Flatten(),
             tf.keras.layers.Dense(32, activation='relu', use_bias=True),
-            tf.keras.layers.Dense(10, activation='softmax', use_bias=True)
+            tf.keras.layers.Dense(2, activation='softmax', use_bias=True)
         ])
         model.compile(
             optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
@@ -61,15 +63,27 @@ def train():
         loss=tf.keras.losses.sparse_categorical_crossentropy,
         metrics=[tf.keras.metrics.sparse_categorical_accuracy]
     )
-    model.fit(train_dataset, epochs=num_epochs)
-    tf.saved_model.save(model, "saved/job_WRN_back")
-    return model
+    history = model.fit(train_dataset, epochs=num_epochs)
+    tf.saved_model.save(model, "saved/myModel")
+    return model, history
 if __name__ == '__main__':
     f = open('result.txt', 'w')
     try:
-        model = train()
-        f.write('success')
-    except:
-        f.write('error')
+        model, history = train()
+        f.write('success\n')
+        f.write('loss:' + str(history.history['loss']) + '\n')
+        f.write('sparse_categorical_accuracy:' + str(history.history['sparse_categorical_accuracy']) + '\n')
+    except Exception as e:
+        traceback.print_exc()
+        error_class = e.__class__.__name__
+        detail = str(e)
+        cl, exc, tb = sys.exc_info()
+        lastCallStack = traceback.extract_tb(tb)[-1]
+        fileName = lastCallStack[0]
+        lineNum = lastCallStack[1]
+        funcName = lastCallStack[2]
+        errMsg = "File \"{}\", line {}, in {}: [{}] {}".format(fileName, lineNum, funcName, error_class, detail)
+        f.write('error\n')
+        f.write(errMsg)
     finally:
         f.close()
