@@ -13,8 +13,8 @@ class MyModel():
     def getModel(self):
         model = tf.keras.Sequential([
             tf.keras.layers.Conv2D(32, 3, activation='relu', padding='valid', input_shape=(64, 64, 3)),
-            tf.keras.layers.MaxPool2D(2, strides=3, padding='valid'),
             tf.keras.layers.Flatten(),
+            tf.keras.layers.MaxPool2D(2, strides=3, padding='valid'),
             tf.keras.layers.Dense(32, activation='relu', use_bias=True),
             tf.keras.layers.Dense(2, activation='softmax', use_bias=True)
         ])
