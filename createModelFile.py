@@ -1,6 +1,6 @@
 def get_model_file_text(layer_argument, train_dirs, test_dirs, wide_setting):
     model_file_text = ''
-    import_text = 'import tensorflow as tf\nimport os\nimport numpy as np\nimport cv2\n'
+    import_text = 'import tensorflow as tf\nimport os\nimport numpy as np\n'
     import_text += 'import sys\n'
     import_text += 'import traceback\n'
     model_file_text += import_text

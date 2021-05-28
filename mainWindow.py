@@ -4,6 +4,7 @@ from tkinter import messagebox
 from win32api import GetSystemMetrics
 import subprocess
 import createModelFile
+import createPredictFile
 import os
 import threading
 
@@ -37,7 +38,7 @@ class TfMainWindow:
         self.train_data_directory_label.grid(column=0, row=1)
         self.train_data_path_label = tk.Label(self.main_window, text='Not Selected', bg='#4e5254', fg='white', width=20)
         self.train_data_path_label.grid(column=0, row=2)
-        self.test_data_directory_label = tk.Label(self.main_window, text='Test Data Directory', bg='#4e5254',
+        self.test_data_directory_label = tk.Label(self.main_window, text='Predict Data Directory', bg='#4e5254',
                                                   fg='white', width=20)
         self.test_data_directory_label.grid(column=0, row=3)
         self.test_data_path_label = tk.Label(self.main_window, text='Not Selected', bg='#4e5254', fg='white', width=20)
@@ -56,6 +57,9 @@ class TfMainWindow:
 
         self.status_content_label = tk.Label(self.main_window, text='Setting', bg='#4e5254', fg='#00ff00')
         self.status_content_label.grid(column=3, row=10)
+
+        self.predict_button = tk.Button(self.main_window, text='predict', command=self.predictModel)
+        self.predict_button.grid(column=4, row=10)
 
         self.wide_setting = [{'num_epochs': 10, 'batch_size': 32, 'learning_rate': 0.01, 'width': 64, 'height': 64,
                               'channel': 3, 'modelName' : 'myModel'},
@@ -168,7 +172,7 @@ class TfMainWindow:
             tk.messagebox.showerror(title='Error', message='Please select train data')
             return
         if self.testDataPath is None:
-            tk.messagebox.showerror(title='Error', message='Please select test data')
+            tk.messagebox.showerror(title='Error', message='Please select predict data')
             return
         train_dirs = os.listdir(self.trainDataPath)
         test_dirs = os.listdir(self.testDataPath)
@@ -246,6 +250,34 @@ class TfMainWindow:
         self.status_content_label['fg'] = '#ff0000'
         thread.start()
 
+
+    def predictModel(self):
+        if self.trainDataPath is None:
+            tk.messagebox.showerror(title='Error', message='Please select train data')
+            return
+        if self.testDataPath is None:
+            tk.messagebox.showerror(title='Error', message='Please select predict data')
+            return
+        train_dirs = os.listdir(self.trainDataPath)
+        test_dirs = os.listdir(self.testDataPath)
+        for i in range(len(train_dirs)):
+            fullpath = os.path.join(self.trainDataPath, train_dirs[i])
+            fullpath = fullpath.replace('\\', '/')
+            #train_dirs[i] = fullpath
+
+        for i in range(len(test_dirs)):
+            fullpath = os.path.join(self.testDataPath, test_dirs[i])
+            fullpath = fullpath.replace('\\', '/')
+            test_dirs[i] = fullpath
+        self.predict_button.configure(state='disable')
+        text = createPredictFile.get_predict_file_text(self.testDataPath, train_dirs, self.wide_setting)
+        createPredictFile.save_text_to_python_file(text, 'predictImage.py')
+        thread = threading.Thread(target=self.execute_os_system, args=('python predictImage.py',))
+        self.status_content_label['text'] = 'Predicting Model'
+        self.status_content_label['fg'] = '#ff0000'
+        thread.start()
+
+
     def execute_os_system(self, command):
         os.system(command)
 
@@ -281,6 +313,22 @@ class TfMainWindow:
         self.add_layer_button.configure(state='normal')
         self.remove_layer_button.configure(state='normal')
 
+        f = open('result.txt', 'r')
+        status = f.readline()
+        print('status:', status)
+        if status == 'success\n':
+            self.status_content_label['text'] = 'Finish'
+            self.status_content_label['fg'] = '#00ff00'
+        elif status == 'error\n':
+            self.status_content_label['text'] = 'Error'
+            self.status_content_label['fg'] = '#ff0000'
+        else:
+            self.status_content_label['text'] = 'WTF?'
+            self.status_content_label['fg'] = '#0000ff'
+
+    def excute_os_system_predict(self, command):
+        os.system(command)
+        self.predict_button.configure(state='normal')
         f = open('result.txt', 'r')
         status = f.readline()
         print('status:', status)
@@ -415,7 +463,7 @@ class TfMainWindow:
         file_menu = tk.Menu(menu_bar)
         file_menu.add_command(label='Open', command=self.file_menu_open)
         file_menu.add_command(label='Select Train Data', command=self.file_menu_select_train)
-        file_menu.add_command(label='Select Test Data', command=self.file_menu_select_test)
+        file_menu.add_command(label='Select Predict Data', command=self.file_menu_select_test)
         file_menu.add_command(label='Exit', command=self.file_menu_exit)
         menu_bar.add_cascade(label='File', menu=file_menu)
 

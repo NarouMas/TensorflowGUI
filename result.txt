@@ -1,2 +1,1 @@
-error
-File "D:\Users\Wu\anaconda3\envs\Tensorflow2\lib\site-packages\tensorflow\python\keras\engine\input_spec.py", line 180, in assert_input_compatibility: [ValueError] Input 0 of layer max_pooling2d is incompatible with the layer: expected ndim=4, found ndim=2. Full shape received: [None, 123008]
+success

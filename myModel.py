@@ -66,6 +66,8 @@ def train():
     history = model.fit(train_dataset, epochs=num_epochs)
     tf.saved_model.save(model, "saved/myModel")
     return model, history
+
+
 if __name__ == '__main__':
     f = open('result.txt', 'w')
     try:
