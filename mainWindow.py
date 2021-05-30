@@ -25,7 +25,7 @@ class TfMainWindow:
         self.layer_opt = []
         self.layer_variable = []
         self.layer_argument = []
-        self.layerOption = ['Conv2D', 'Flatten', 'MaxPool2D', 'Dense']
+        self.layerOption = ['Conv2D', 'Flatten', 'MaxPool2D', 'Dense', 'Dropout']
         self.activationOption = ['relu', 'None', 'linear', 'softmax']
         self.paddingOption = ['valid', 'same']
         self.booleanOption = ['True', 'False']
@@ -175,20 +175,11 @@ class TfMainWindow:
         if self.trainDataPath is None:
             tk.messagebox.showerror(title='Error', message='Please select train data')
             return
-        if self.testDataPath is None:
-            tk.messagebox.showerror(title='Error', message='Please select predict data')
-            return
         train_dirs = os.listdir(self.trainDataPath)
-        test_dirs = os.listdir(self.testDataPath)
         for i in range(len(train_dirs)):
             fullpath = os.path.join(self.trainDataPath, train_dirs[i])
             fullpath = fullpath.replace('\\', '/')
             train_dirs[i] = fullpath
-
-        for i in range(len(test_dirs)):
-            fullpath = os.path.join(self.testDataPath, test_dirs[i])
-            fullpath = fullpath.replace('\\', '/')
-            test_dirs[i] = fullpath
 
         # set layer arguments
         self.run_button.configure(state='disabled')
@@ -225,6 +216,9 @@ class TfMainWindow:
                 self.layer_argument[i][2].configure(state='disabled')
                 self.layer_argument[i][7].configure(state='disabled')
                 self.layer_argument[i][9].configure(state='disabled')
+            elif self.layer_argument[i][0]['type'] == 'Dropout':
+                self.layer_argument[i][0]['rate'] = float(self.layer_argument[i][2].get())
+                self.layer_argument[i][2].configure(state='disabled')
 
         self.wide_setting[0]['num_epochs'] = int(self.wide_setting[2].get())
         self.wide_setting[0]['batch_size'] = int(self.wide_setting[4].get())
@@ -245,7 +239,7 @@ class TfMainWindow:
         self.add_layer_button.configure(state='disabled')
         self.remove_layer_button.configure(state='disabled')
 
-        text = createModelFile.get_model_file_text(self.layer_argument, train_dirs, test_dirs, self.wide_setting)
+        text = createModelFile.get_model_file_text(self.layer_argument, train_dirs, self.wide_setting)
         createModelFile.save_text_to_python_file(text, 'myModel.py')
 
         cmd = ['python', 'myModel.py']
@@ -276,7 +270,7 @@ class TfMainWindow:
         self.predict_button.configure(state='disable')
         text = createPredictFile.get_predict_file_text(self.testDataPath, train_dirs, self.wide_setting)
         createPredictFile.save_text_to_python_file(text, 'predictImage.py')
-        thread = threading.Thread(target=self.execute_os_system, args=('python predictImage.py',))
+        thread = threading.Thread(target=self.excute_os_system_predict, args=('python predictImage.py',))
         self.status_content_label['text'] = 'Predicting Model'
         self.status_content_label['fg'] = '#ff0000'
         thread.start()
@@ -305,6 +299,8 @@ class TfMainWindow:
                 self.layer_argument[i][2].configure(state='normal')
                 self.layer_argument[i][7].configure(state='normal')
                 self.layer_argument[i][9].configure(state='normal')
+            elif self.layer_argument[i][0]['type'] == 'Dropout':
+                self.layer_argument[i][2].configure(state='normal')
 
         self.wide_setting[2].configure(state='normal')
         self.wide_setting[4].configure(state='normal')
@@ -456,6 +452,16 @@ class TfMainWindow:
             #layer_argument_dense[5].grid(column=9, row=var)  # use_bias label
             layer_argument_dense[9].config(width=10, font=('Helvetica', 8))
             layer_argument_dense[9].grid(column=6, row=var, padx=5, pady=5)  # use_bias option
+
+        elif text == 'Dropout':
+            layer_argument_dropout = [{'type': 'Dropout', 'rate': 0.1},
+                                    tk.Label(self.main_window, text='rate', bg='#4e5254', fg='white', width=10),
+                                    tk.Entry(self.main_window, width=10),
+                                    ]
+            self.layer_argument[var] = layer_argument_dropout
+            layer_argument_dropout[1].grid(column=3, row=var, padx=5, pady=5)  # units label
+            layer_argument_dropout[2].grid(column=4, row=var, padx=5, pady=5)  # units entry
+            layer_argument_dropout[2].insert(tk.END, '0.1')
 
     def layer_activation_opt_listener(self, var, index, mode):
         pass

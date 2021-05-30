@@ -1,9 +1,9 @@
 import tensorflow as tf
 import os
 import numpy as np
-import cv2
 import sys
 import traceback
+import matplotlib.pyplot as plt
 num_epochs = 10
 batch_size = 32
 learning_rate = 0.001
@@ -13,8 +13,8 @@ class MyModel():
     def getModel(self):
         model = tf.keras.Sequential([
             tf.keras.layers.Conv2D(32, 3, activation='relu', padding='valid', input_shape=(64, 64, 3)),
-            tf.keras.layers.Flatten(),
             tf.keras.layers.MaxPool2D(2, strides=3, padding='valid'),
+            tf.keras.layers.Flatten(),
             tf.keras.layers.Dense(32, activation='relu', use_bias=True),
             tf.keras.layers.Dense(2, activation='softmax', use_bias=True)
         ])
@@ -65,9 +65,22 @@ def train():
     )
     history = model.fit(train_dataset, epochs=num_epochs)
     tf.saved_model.save(model, "saved/myModel")
+
+    plt.title('train_loss')
+    plt.ylabel('loss')
+    plt.xlabel('Epoch')
+    plt.plot(history.history['loss'])
+    plt.savefig('myModel_loss.jpg')
+
+    plt.clf()
+
+    plt.title('train_accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('Epoch')
+    plt.plot(history.history['sparse_categorical_accuracy'])
+    plt.savefig('myModel_accuracy.jpg')
+
     return model, history
-
-
 if __name__ == '__main__':
     f = open('result.txt', 'w')
     try:

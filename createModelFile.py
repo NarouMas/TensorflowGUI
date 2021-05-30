@@ -1,8 +1,9 @@
-def get_model_file_text(layer_argument, train_dirs, test_dirs, wide_setting):
+def get_model_file_text(layer_argument, train_dirs, wide_setting):
     model_file_text = ''
     import_text = 'import tensorflow as tf\nimport os\nimport numpy as np\n'
     import_text += 'import sys\n'
     import_text += 'import traceback\n'
+    import_text += 'import matplotlib.pyplot as plt\n'
     model_file_text += import_text
 
     model_file_text += 'num_epochs = ' + str(wide_setting[0]['num_epochs']) + '\n'
@@ -28,6 +29,8 @@ def get_model_file_text(layer_argument, train_dirs, test_dirs, wide_setting):
             layer_text += str(argument['pool_size']) + ', strides=' + str(argument['strides']) + ', padding=\'' + argument['padding'] + '\''
         elif argument['type'] == 'Dense':
             layer_text += str(argument['units']) + ', activation=\'' + argument['activation'] + '\', use_bias=' + str(argument['use_bias']) + ''
+        elif argument['type'] == 'Dropout':
+            layer_text += str(argument['rate'])
         if i == 0:
             layer_text += ', input_shape=(' + str(wide_setting[0]['width']) + ', ' + str(wide_setting[0]['height']) + ', ' + str(wide_setting[0]['channel']) + ')'
         layer_text += ')'
@@ -88,11 +91,19 @@ def get_model_file_text(layer_argument, train_dirs, test_dirs, wide_setting):
     function_text += '        metrics=[tf.keras.metrics.sparse_categorical_accuracy]\n'
     function_text += '    )\n'
     function_text += '    history = model.fit(train_dataset, epochs=num_epochs)\n'
-    function_text += '    tf.saved_model.save(model, "saved/' + wide_setting[0]['modelName'] + '")\n'
+    function_text += '    tf.saved_model.save(model, "saved/' + wide_setting[0]['modelName'] + '")\n\n'
+    function_text += '    plt.title(\'train_loss\')\n'
+    function_text += '    plt.ylabel(\'loss\')\n'
+    function_text += '    plt.xlabel(\'Epoch\')\n'
+    function_text += '    plt.plot(history.history[\'loss\'])\n'
+    function_text += '    plt.savefig(\'' + wide_setting[0]['modelName'] + '_loss.jpg\')\n\n'
+    function_text += '    plt.clf()\n\n'
+    function_text += '    plt.title(\'train_accuracy\')\n'
+    function_text += '    plt.ylabel(\'accuracy\')\n'
+    function_text += '    plt.xlabel(\'Epoch\')\n'
+    function_text += '    plt.plot(history.history[\'sparse_categorical_accuracy\'])\n'
+    function_text += '    plt.savefig(\'' + wide_setting[0]['modelName'] + '_accuracy.jpg\')\n\n'
     function_text += '    return model, history\n'
-    function_text += ''
-    function_text += ''
-    function_text += ''
     model_file_text += function_text
 
     main_text = ''
