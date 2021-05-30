@@ -45,21 +45,21 @@ class TfMainWindow:
         self.test_data_path_label.grid(column=0, row=4)
 
         self.add_layer_button = tk.Button(self.main_window, text='Add Layer', command=self.add_layer)
-        self.add_layer_button.grid(column=1, row=self.layerCount)
+        self.add_layer_button.grid(column=1, row=17)
         self.remove_layer_button = tk.Button(self.main_window, text='Remove Layer', command=self.remove_layer)
-        self.remove_layer_button.grid(column=2, row=self.layerCount)
+        self.remove_layer_button.grid(column=2, row=17)
 
         self.run_button = tk.Button(self.main_window, text='Run', command=self.run)
-        self.run_button.grid(column=1, row=10)
+        self.run_button.grid(column=3, row=17)
 
         self.status_label = tk.Label(self.main_window, text='Status', bg='#4e5254', fg='white')
-        self.status_label.grid(column=2, row=10)
+        self.status_label.grid(column=4, row=17)
 
         self.status_content_label = tk.Label(self.main_window, text='Setting', bg='#4e5254', fg='#00ff00')
-        self.status_content_label.grid(column=3, row=10)
+        self.status_content_label.grid(column=5, row=17)
 
         self.predict_button = tk.Button(self.main_window, text='predict', command=self.predictModel)
-        self.predict_button.grid(column=4, row=10)
+        self.predict_button.grid(column=6, row=17)
 
         self.wide_setting = [{'num_epochs': 10, 'batch_size': 32, 'learning_rate': 0.01, 'width': 64, 'height': 64,
                               'channel': 3, 'modelName' : 'myModel'},
@@ -78,29 +78,32 @@ class TfMainWindow:
                              tk.Label(self.main_window, text='model name', bg='#4e5254', fg='white'),
                              tk.Entry(self.main_window, width=10),
                              ]
-        self.wide_setting[1].grid(column=3, row=9, padx=5, pady=5)  # num_epochs label
-        self.wide_setting[2].grid(column=4, row=9, padx=5, pady=5)  # num_epochs entry
+        self.wide_setting[1].grid(column=3, row=16, padx=5, pady=5)  # num_epochs label
+        self.wide_setting[2].grid(column=4, row=16, padx=5, pady=5)  # num_epochs entry
         self.wide_setting[2].insert(tk.END, '10')
-        self.wide_setting[3].grid(column=5, row=9, padx=5, pady=5)  # batch_size label
-        self.wide_setting[4].grid(column=6, row=9, padx=5, pady=5)  # batch_size entry
+        self.wide_setting[3].grid(column=5, row=16, padx=5, pady=5)  # batch_size label
+        self.wide_setting[4].grid(column=6, row=16, padx=5, pady=5)  # batch_size entry
         self.wide_setting[4].insert(tk.END, '32')
-        self.wide_setting[5].grid(column=7, row=9, padx=5, pady=5)  # learning_rate label
-        self.wide_setting[6].grid(column=8, row=9, padx=5, pady=5)  # learning_rate entry
+        self.wide_setting[5].grid(column=7, row=16, padx=5, pady=5)  # learning_rate label
+        self.wide_setting[6].grid(column=8, row=16, padx=5, pady=5)  # learning_rate entry
         self.wide_setting[6].insert(tk.END, '0.001')
-        self.wide_setting[7].grid(column=9, row=9, padx=5, pady=5)  # width label
-        self.wide_setting[8].grid(column=10, row=9, padx=5, pady=5)  # width entry
+        self.wide_setting[7].grid(column=9, row=16, padx=5, pady=5)  # width label
+        self.wide_setting[8].grid(column=10, row=16, padx=5, pady=5)  # width entry
         self.wide_setting[8].insert(tk.END, '64')
-        self.wide_setting[9].grid(column=11, row=9, padx=5, pady=5)  # height label
-        self.wide_setting[10].grid(column=12, row=9, padx=5, pady=5)  # height entry
+        self.wide_setting[9].grid(column=11, row=16, padx=5, pady=5)  # height label
+        self.wide_setting[10].grid(column=12, row=16, padx=5, pady=5)  # height entry
         self.wide_setting[10].insert(tk.END, '64')
-        self.wide_setting[11].grid(column=13, row=9, padx=5, pady=5)  # channel label
-        self.wide_setting[12].grid(column=14, row=9, padx=5, pady=5)  # channel entry
+        self.wide_setting[11].grid(column=13, row=16, padx=5, pady=5)  # channel label
+        self.wide_setting[12].grid(column=14, row=16, padx=5, pady=5)  # channel entry
         self.wide_setting[12].insert(tk.END, '3')
-        self.wide_setting[13].grid(column=1, row=9, padx=5, pady=5)  # model name label
-        self.wide_setting[14].grid(column=2, row=9, padx=5, pady=5)  # model name entry
+        self.wide_setting[13].grid(column=1, row=16, padx=5, pady=5)  # model name label
+        self.wide_setting[14].grid(column=2, row=16, padx=5, pady=5)  # model name entry
         self.wide_setting[14].insert(tk.END, 'myModel')
 
     def add_layer(self):
+        if self.layerCount > 14:
+            tk.messagebox.showerror(title='Error', message='You can at most add 15 layers')
+            return
         # add the drop layer drop down menu
         self.layer_variable.append(tk.StringVar(self.main_window, name=str(self.layerCount)))
         self.layer_variable[self.layerCount].set(self.layerOption[0])
@@ -150,11 +153,12 @@ class TfMainWindow:
         layer_argument_conv2d[12].grid(column=12, row=self.layerCount, padx=5, pady=5)  # padding option
         # grid button in window
         self.layerCount += 1
-        self.add_layer_button.grid(column=1, row=self.layerCount)
-        self.remove_layer_button.grid(column=2, row=self.layerCount)
+        #self.add_layer_button.grid(column=1, row=self.layerCount)
+        #self.remove_layer_button.grid(column=2, row=self.layerCount)
 
     def remove_layer(self):
         if self.layerCount <= 0:
+            tk.messagebox.showerror(title='Error', message='No more layer to be removed')
             return
         self.layer_opt[self.layerCount - 1].destroy()
         for i in range(1, len(self.layer_argument[self.layerCount - 1])):
@@ -164,8 +168,8 @@ class TfMainWindow:
         self.layer_variable.pop(self.layerCount - 1)
         self.layer_argument.pop(self.layerCount - 1)
         self.layerCount -= 1
-        self.add_layer_button.grid(column=1, row=self.layerCount)
-        self.remove_layer_button.grid(column=2, row=self.layerCount)
+        #self.add_layer_button.grid(column=1, row=self.layerCount)
+        #self.remove_layer_button.grid(column=2, row=self.layerCount)
 
     def run(self):
         if self.trainDataPath is None:
