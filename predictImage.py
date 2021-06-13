@@ -5,11 +5,11 @@ import sys
 import traceback
 import shutil
 
-predict_dir = ['D:/Users/Wu/PycharmProjects/TensorflowGUI/predictData/mask_face','D:/Users/Wu/PycharmProjects/TensorflowGUI/predictData/no_mask_face']
+predict_dir = ['D:/Users/Wu/PycharmProjects/TensorflowGUI/predictData/number/0','D:/Users/Wu/PycharmProjects/TensorflowGUI/predictData/number/1','D:/Users/Wu/PycharmProjects/TensorflowGUI/predictData/number/2','D:/Users/Wu/PycharmProjects/TensorflowGUI/predictData/number/3','D:/Users/Wu/PycharmProjects/TensorflowGUI/predictData/number/4','D:/Users/Wu/PycharmProjects/TensorflowGUI/predictData/number/5','D:/Users/Wu/PycharmProjects/TensorflowGUI/predictData/number/6','D:/Users/Wu/PycharmProjects/TensorflowGUI/predictData/number/7','D:/Users/Wu/PycharmProjects/TensorflowGUI/predictData/number/8','D:/Users/Wu/PycharmProjects/TensorflowGUI/predictData/number/9']
 def predict_resize_decode(filename):
     image_string = tf.io.read_file(filename)
     image_decoded = tf.image.decode_jpeg(image_string)
-    image_resized = tf.image.resize(image_decoded, [64, 64]) / 255.0
+    image_resized = tf.image.resize(image_decoded, [28, 28]) / 255.0
     image_resized = np.expand_dims(image_resized, axis=0)
     return image_resized
 def predict(predict_path, model_name):
@@ -27,7 +27,7 @@ def predict(predict_path, model_name):
                     index = i
             shutil.move(fullpath, predict_dir[index] + '/' + f)
 if __name__ == '__main__':
-    path = 'D:/Users/Wu/PycharmProjects/TensorflowGUI/predictData'
+    path = 'D:/Users/Wu/PycharmProjects/TensorflowGUI/predictData/number'
     modelName = 'myModel'
     for folder in predict_dir:
         os.mkdir(folder)

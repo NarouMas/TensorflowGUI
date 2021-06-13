@@ -22,16 +22,25 @@ def get_model_file_text(layer_argument, train_dirs, wide_setting):
         layer_text = ''
         layer_text += '            tf.keras.layers.' + argument['type'] + '('
         if argument['type'] == 'Conv2D':
-            layer_text += str(argument['filters']) + ', ' + str(argument['kernel_size']) + ', activation=\'' + argument['activation'] + '\', padding=\'' + argument['padding'] + '\''
+            if argument['activation'] == 'None':
+                layer_text += str(argument['filters']) + ', ' + str(argument['kernel_size']) + ', padding=\'' + argument['padding'] + '\''
+            else:
+                layer_text += str(argument['filters']) + ', ' + str(argument['kernel_size']) + ', activation=\'' + argument['activation'] + '\', padding=\'' + argument['padding'] + '\''
         elif argument['type'] == 'Flatten':
             layer_text += ''
         elif argument['type'] == 'MaxPool2D':
             layer_text += str(argument['pool_size']) + ', strides=' + str(argument['strides']) + ', padding=\'' + argument['padding'] + '\''
         elif argument['type'] == 'Dense':
-            layer_text += str(argument['units']) + ', activation=\'' + argument['activation'] + '\', use_bias=' + str(argument['use_bias']) + ''
+            if argument['activation'] == 'None':
+                layer_text += str(argument['units']) + ', use_bias=' + str(argument['use_bias']) + ''
+            else:
+                layer_text += str(argument['units']) + ', activation=\'' + argument['activation'] + '\', use_bias=' + str(argument['use_bias']) + ''
         elif argument['type'] == 'Dropout':
             layer_text += str(argument['rate'])
-        if i == 0:
+        if i == 0 and argument['type'] == 'Flatten':
+            layer_text += 'input_shape=(' + str(wide_setting[0]['width']) + ', ' + str(
+                wide_setting[0]['height']) + ', ' + str(wide_setting[0]['channel']) + ')'
+        elif i == 0:
             layer_text += ', input_shape=(' + str(wide_setting[0]['width']) + ', ' + str(wide_setting[0]['height']) + ', ' + str(wide_setting[0]['channel']) + ')'
         layer_text += ')'
 

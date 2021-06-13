@@ -4,19 +4,27 @@ import numpy as np
 import sys
 import traceback
 import matplotlib.pyplot as plt
-num_epochs = 10
+num_epochs = 5
 batch_size = 32
 learning_rate = 0.001
-train_0_dir = 'D:/Users/Wu/PycharmProjects/TensorflowGUI/trainData/mask_face/'
-train_1_dir = 'D:/Users/Wu/PycharmProjects/TensorflowGUI/trainData/no_mask_face/'
+train_0_dir = 'D:/Users/Wu/PycharmProjects/TensorflowGUI/trainData/number/0/'
+train_1_dir = 'D:/Users/Wu/PycharmProjects/TensorflowGUI/trainData/number/1/'
+train_2_dir = 'D:/Users/Wu/PycharmProjects/TensorflowGUI/trainData/number/2/'
+train_3_dir = 'D:/Users/Wu/PycharmProjects/TensorflowGUI/trainData/number/3/'
+train_4_dir = 'D:/Users/Wu/PycharmProjects/TensorflowGUI/trainData/number/4/'
+train_5_dir = 'D:/Users/Wu/PycharmProjects/TensorflowGUI/trainData/number/5/'
+train_6_dir = 'D:/Users/Wu/PycharmProjects/TensorflowGUI/trainData/number/6/'
+train_7_dir = 'D:/Users/Wu/PycharmProjects/TensorflowGUI/trainData/number/7/'
+train_8_dir = 'D:/Users/Wu/PycharmProjects/TensorflowGUI/trainData/number/8/'
+train_9_dir = 'D:/Users/Wu/PycharmProjects/TensorflowGUI/trainData/number/9/'
 class MyModel():
     def getModel(self):
         model = tf.keras.Sequential([
-            tf.keras.layers.Conv2D(32, 3, activation='relu', padding='valid', input_shape=(64, 64, 3)),
-            tf.keras.layers.MaxPool2D(2, strides=3, padding='valid'),
+            tf.keras.layers.Conv2D(32, 3, padding='valid', input_shape=(28, 28, 1)),
             tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(32, activation='relu', use_bias=True),
-            tf.keras.layers.Dense(2, activation='softmax', use_bias=True)
+            tf.keras.layers.Dense(10, use_bias=True),
+            tf.keras.layers.Dense(10, activation='linear', use_bias=True),
+            tf.keras.layers.Dense(10, activation='softmax', use_bias=True)
         ])
         model.compile(
             optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
@@ -29,14 +37,14 @@ class MyModel():
 def _decode_and_resize(filename, label):
     image_string = tf.io.read_file(filename)
     image_decoded = tf.image.decode_jpeg(image_string)
-    image_resized = tf.image.resize(image_decoded, [64, 64]) / 255.0
+    image_resized = tf.image.resize(image_decoded, [28, 28]) / 255.0
     return image_resized, label
 
 
 def predict_resize_decode(filename):
     image_string = tf.io.read_file(filename)
     image_decoded = tf.image.decode_jpeg(image_string)
-    image_resized = tf.image.resize(image_decoded, [64, 64]) / 255.0
+    image_resized = tf.image.resize(image_decoded, [28, 28]) / 255.0
     image_resized = np.expand_dims(image_resized, axis=0)
     return image_resized
 
@@ -44,11 +52,27 @@ def predict_resize_decode(filename):
 def train():
     train_0_filenames = tf.constant([train_0_dir + filename for filename in os.listdir(train_0_dir)])
     train_1_filenames = tf.constant([train_1_dir + filename for filename in os.listdir(train_1_dir)])
-    train_filenames = tf.concat([train_0_filenames, train_1_filenames], axis=-1)
+    train_2_filenames = tf.constant([train_2_dir + filename for filename in os.listdir(train_2_dir)])
+    train_3_filenames = tf.constant([train_3_dir + filename for filename in os.listdir(train_3_dir)])
+    train_4_filenames = tf.constant([train_4_dir + filename for filename in os.listdir(train_4_dir)])
+    train_5_filenames = tf.constant([train_5_dir + filename for filename in os.listdir(train_5_dir)])
+    train_6_filenames = tf.constant([train_6_dir + filename for filename in os.listdir(train_6_dir)])
+    train_7_filenames = tf.constant([train_7_dir + filename for filename in os.listdir(train_7_dir)])
+    train_8_filenames = tf.constant([train_8_dir + filename for filename in os.listdir(train_8_dir)])
+    train_9_filenames = tf.constant([train_9_dir + filename for filename in os.listdir(train_9_dir)])
+    train_filenames = tf.concat([train_0_filenames, train_1_filenames, train_2_filenames, train_3_filenames, train_4_filenames, train_5_filenames, train_6_filenames, train_7_filenames, train_8_filenames, train_9_filenames], axis=-1)
 
     train_labels = tf.concat([
         tf.constant([0] * train_0_filenames.shape[0]),
-        tf.constant([1] * train_1_filenames.shape[0])], axis=-1)
+        tf.constant([1] * train_1_filenames.shape[0]),
+        tf.constant([2] * train_2_filenames.shape[0]),
+        tf.constant([3] * train_3_filenames.shape[0]),
+        tf.constant([4] * train_4_filenames.shape[0]),
+        tf.constant([5] * train_5_filenames.shape[0]),
+        tf.constant([6] * train_6_filenames.shape[0]),
+        tf.constant([7] * train_7_filenames.shape[0]),
+        tf.constant([8] * train_8_filenames.shape[0]),
+        tf.constant([9] * train_9_filenames.shape[0])], axis=-1)
     train_dataset = tf.data.Dataset.from_tensor_slices((train_filenames, train_labels))
     train_dataset = train_dataset.map(
         map_func=_decode_and_resize,
