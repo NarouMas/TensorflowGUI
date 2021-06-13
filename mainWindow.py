@@ -26,7 +26,7 @@ class TfMainWindow:
         self.layer_variable = []
         self.layer_argument = []
         self.layerOption = ['Conv2D', 'Flatten', 'MaxPool2D', 'Dense', 'Dropout']
-        self.activationOption = ['relu', 'None', 'linear', 'softmax']
+        self.activationOption = ['relu', 'None', 'sigmoid', 'softmax']
         self.paddingOption = ['valid', 'same']
         self.booleanOption = ['True', 'False']
         self.layerCount = 0

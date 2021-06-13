@@ -20,10 +20,8 @@ train_9_dir = 'D:/Users/Wu/PycharmProjects/TensorflowGUI/trainData/number/9/'
 class MyModel():
     def getModel(self):
         model = tf.keras.Sequential([
-            tf.keras.layers.Conv2D(32, 3, padding='valid', input_shape=(28, 28, 1)),
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(10, use_bias=True),
-            tf.keras.layers.Dense(10, activation='linear', use_bias=True),
+            tf.keras.layers.Flatten(input_shape=(28, 28, 1)),
+            tf.keras.layers.Dense(32, activation='relu', use_bias=True),
             tf.keras.layers.Dense(10, activation='softmax', use_bias=True)
         ])
         model.compile(
