@@ -471,7 +471,7 @@ class TfMainWindow:
         self.main_window.config(menu=menu_bar)
 
         file_menu = tk.Menu(menu_bar)
-        file_menu.add_command(label='Open', command=self.file_menu_open)
+        #file_menu.add_command(label='Open', command=self.file_menu_open)
         file_menu.add_command(label='Select Train Data', command=self.file_menu_select_train)
         file_menu.add_command(label='Select Predict Data', command=self.file_menu_select_test)
         file_menu.add_command(label='Exit', command=self.file_menu_exit)
